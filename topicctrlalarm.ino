@@ -24,7 +24,7 @@
   // Replace the next variables with your SSID/Password combination
   const char* ssid = "hau";
   const char* password = "Chonghau1";
-  const char* mqtt_server = "172.20.10.7";
+  const char* mqtt_server = "192.168.20.235";
 
   WiFiClient espClient;
   PubSubClient client(espClient);
@@ -35,7 +35,8 @@
   
   void alarm(){ 
     NeoPixel.clear();  // set all pixel colors to 'off'. It only takes effect if pixels.show() is called 
-  
+    client.publish("TakeAPicture","saycheese!");
+
     // turn pixels to green one-by-one with delay between each pixel 
     for (int i = 0; i < 4; i++){ 
       for (int pixel = 0; pixel < NUM_PIXELS; pixel++) {           // for each pixel 
@@ -88,9 +89,7 @@
   }
 
   void callback(char* topic, byte* message, unsigned int length) {
-    Serial.print("Message arrived on topic: ");
-    Serial.print(topic);
-    Serial.print(". Message: ");
+    Serial.println(topic);
     String messageTemp;
     
     for (int i = 0; i < length; i++) {
@@ -98,38 +97,6 @@
       messageTemp += (char)message[i];
     }
     Serial.println();
-
-    if (String(topic) == "esp32/door") {
-      if(messageTemp == "intact"){
-        // do nothing
-      }
-      else if(messageTemp == "breached"){
-        Serial.println("esp32/door: DOOR BREACHED");
-        alarm();
-      }
-    }
-
-    else if (String(topic) == "esp32/window") {
-      if(messageTemp == "intact"){
-        // do nothing
-      }
-      else if(messageTemp == "breached"){
-        Serial.println("esp32/window: WINDOW BREACHED");
-        alarm();
-      }
-    }
-
-    else if (String(topic) == "esp32/distance") {
-      int dist;
-      dist = messageTemp.toInt();
-      if(dist > 5){
-        // do nothing
-      }
-      else if(dist < 5){
-        Serial.println("esp32/distance: MOTION DETECTED");
-        alarm();
-      }
-    }
 
   }
 
@@ -140,8 +107,6 @@
       // Attempt to connect
       if (client.connect("ESP8266Client")) {
         Serial.println("connected");
-        // Subscribe
-        client.subscribe("esp32/output");
       } else {
         Serial.print("failed, rc=");
         Serial.print(client.state());
@@ -196,19 +161,18 @@
     Serial.println(distanceCm); 
     
     if (digitalRead(magnet_switch) == LOW) { 
-      Serial.println("Door intact."); 
+      //Serial.println("Door intact."); 
       doormsg = "intact";
     } 
     else { 
-      Serial.println("Door breached!"); 
+      //Serial.println("Door breached!"); 
       doormsg = "breached";
-      alarm(); 
     } 
   
     int val; 
     char* windowmsg;
     val=digitalRead(vib_pin); 
-    Serial.println(val); 
+    //Serial.println(val); 
 
     if (val == 1) { 
       windowmsg = "breached";
@@ -217,10 +181,22 @@
       windowmsg = "intact";
     } 
 
+    // sound the alarm
+    if (doormsg == "breached"){
+      alarm();
+    }
+    if (windowmsg == "breached"){
+      alarm();
+    }
+    if ((distanceCm > 0) && (distanceCm < 10)){
+      alarm();
+    }
+  
+
     delayMicroseconds(15); 
     long now = millis();
 
-    if (now - lastMsg > 500) {
+    if (now - lastMsg > 100) {
       lastMsg = now;
 
       client.publish("esp32/door", doormsg);
