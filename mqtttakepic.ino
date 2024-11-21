@@ -7,7 +7,7 @@ DynamicJsonDocument CONFIG(2048);
 
 const char* ssid = "hau";
 const char* password = "Chonghau1";
-const char* mqtt_server = "172.20.10.7";
+const char* mqtt_server = "192.168.20.235";
 const char* HostName = "ESP32CAM";
 const char* topic_PHOTO = "TakeAPicture";
 const char* topic_CONFIG = "JSONConfig";
