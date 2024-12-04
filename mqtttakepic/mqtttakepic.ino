@@ -9,9 +9,9 @@ const char* ssid = "hau";
 const char* password = "Chonghau1";
 const char* mqtt_server = "192.168.20.235";
 const char* HostName = "ESP32CAM";
-const char* topic_PHOTO = "TakeAPicture";
+const char* topic_PHOTO = "home/security/outputs/esp32-3/camera";
 const char* topic_CONFIG = "JSONConfig";
-const char* topic_UP = "PICTURE";
+const char* topic_UP = "home/security/outputs/esp32-3/photo";
 const int ledPin = 4;
 
 WiFiClient espClient;
@@ -94,7 +94,9 @@ void take_picture() {
   }
   else {
     //FAST MODE (increase MQTT_MAX_PACKET_SIZE)
-    client.publish(topic_UP, fb->buf, fb->len, false);
+    Serial.println("Fast mode");
+    client.publish_P(topic_UP, fb->buf, fb->len, false);
+    // client.publish(topic_UP, fb->buf, fb->len, false);
   }
   Serial.println("CLIC");
   esp_camera_fb_return(fb);
